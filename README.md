@@ -4,6 +4,20 @@
 set up a torrent seed box using Ubuntu 14.04
 
 
+## dependencies
+
+on your local admin box:
+
+* ansible version >= 2.0
+* rsync (optional)
+
+on your remote vps
+
+* ubuntu 14.04
+
+
+## setup
+
 create an inventory file. example:
 
 ```
