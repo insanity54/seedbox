@@ -1,0 +1,73 @@
+---
+
+- hosts: seedboxes
+  remote_user: root
+  vars_files:
+    - vars/secret.yml
+    - vars/public.yml
+
+  roles:
+    - bootstrap
+
+
+
+
+  tasks:
+
+    - name: install local ansible dependencies
+      local_action: command ansible-galaxy install -r requirements.yml --ignore-errors
+
+
+    - name: install dependencies
+      apt:
+        name: "{{ item }}"
+      with_items:
+        - deluged
+        - deluge-web
+        - emacs
+        - sudo
+
+    - name: create deluge user
+      user: name=deluge
+
+    - name: create admin user
+      user: name=drip shell=/bin/bash groups=sudo,deluge append=yes
+
+
+
+    - name: copy firewall script
+      copy: src=firewall.sh dest=/tmp/firewall.sh mode=0755
+      become: yes
+      become_user: drip
+
+    - name: create firewall
+      shell: /tmp/firewall.sh
+      become: yes
+      become_user: root
+
+
+    # greets https://askubuntu.com/a/340846/78948
+    - name: prevent the iptables-persistent install dialog
+      debconf: name=iptables-persistent question={{ item }} vtype=boolean value=true
+      with_items:
+        - iptables-persistent/autosave_v4
+        - iptables-persistent/autosave_v6
+      
+    - name: install iptables-persistent to make firewall settings persist
+      apt:
+        name: iptables-persistent
+
+
+    - name: create deluged startup script
+      copy: src=deluged.conf dest=/etc/init/deluged.conf
+
+
+    - name: create deluge-web startup script
+      copy: src=deluge-web.conf dest=/etc/init/deluge-web.conf
+
+
+    - name: start deluged service
+      service: name=deluged state=started
+
+    - name: start deluge-web service
+      service: name=deluge-web state=started
