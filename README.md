@@ -39,7 +39,7 @@ you can use the example file sync.sh to copy downloaded files from your vps to y
 
 ## web gui
 
-deluge-web is locked down. the only way you can access the web gui is via localhost.
+deluge-web is locked down by iptables. the only way you can access the web gui is via localhost.
 
 I recommend SSH SOCKS proxy.
 
